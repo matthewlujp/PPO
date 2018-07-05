@@ -2,7 +2,6 @@ import os
 import shutil
 import argparse
 import numpy as np
-import mujoco_py
 import gym
 from algorithm.ppo import PPO
 from algorithm.policy import MLPGaussianPolicy
