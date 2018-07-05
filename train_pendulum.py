@@ -17,7 +17,7 @@ def reset_dir(dir_path: str):
 
 
 ### Returns policy instance
-def train(env, save_dir: str, epochs: int, update_epochs: int, agents: int, trajectory_steps: int) -> object:
+def train(env, save_dir: str, epochs: int, update_epochs: int, agents: int, trajectory_steps: int, render: bool) -> object:
     reset_dir(save_dir)
 
     policy = MLPGaussianPolicy(
@@ -96,7 +96,8 @@ def train(env, save_dir: str, epochs: int, update_epochs: int, agents: int, traj
                 obs = env.reset()
                 acc_r = 0
                 for t in range(sample_steps):
-                    env.render()
+                    if render:
+                        env.render()
                     action = rl.act(obs)
                     obs, r, done, _ = env.step(action)
                     acc_r += r
@@ -117,7 +118,8 @@ def test(env, policy, steps: int, render=True) -> float:
     obs = env.reset()
     accumulated_reward = 0
     for i in range(steps):
-        env.render()
+        if render:
+            env.render()
         action = policy.act(obs)
         obs, reward, done, _ = env.step(action)
         accumulated_reward += reward
@@ -131,12 +133,13 @@ if __name__ == '__main__':
     parser.add_argument('--update_epochs', type=int, default=10, help="update iteration times during an epoch")
     parser.add_argument('--agents', type=int, default=10, help="number of independent agents during sampling")
     parser.add_argument('--steps', type=int, default=1000, help="steps of sampling")
+    parser.add_argument('--no-render', action="store_false", dest="render", help="prevent render if specified")
     parser.add_argument('save_dir', help="path to a directory where the trained model is saved")
     args = parser.parse_args()
 
     print("Train pendulum")
     env = gym.make('Pendulum-v0')
-    policy = train(env, args.save_dir, args.epochs, args.update_epochs, args.agents, args.steps)
-    reward = test(env, policy, 200)
+    policy = train(env, args.save_dir, args.epochs, args.update_epochs, args.agents, args.steps, args.render)
+    reward = test(env, policy, 200, args.render)
     print("Get accumulated reward {} after training {} epochs".format(reward, args.epochs))
     env.close()
